@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ukk_2025/Produk/menu.dart';
+import 'package:ukk_2025/homePage.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
@@ -10,6 +13,7 @@ void main() async {
   );
   runApp(MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
@@ -55,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_emailError == null && _passwordError == null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MenuPage()),
+        MaterialPageRoute(builder: (context) => HomePage()),
       );
     }
   }
