@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ukk_2025/Produk/tambahProduk.dart';
 import 'package:ukk_2025/homePage.dart';
 import 'package:ukk_2025/Produk/menu.dart';
 import 'package:ukk_2025/Pelanggan/dataPelanggan.dart';
+import 'package:ukk_2025/profilePage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,10 +71,22 @@ class _LoginPageState extends State<LoginPage> {
                 Navigator.pop(context);
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
+                  MaterialPageRoute(builder: (context) => HomePageState()),
                 );
               },
-              child: Text('OK'),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 19, vertical: 15), // Adjust padding as needed
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey, // Set the background color of the bubble
+                  borderRadius: BorderRadius.circular(
+                      16), // Rounded corners for the bubble
+                ),
+                child: const Text(
+                  'OK',
+                  style: TextStyle(color: Colors.black), // Text color
+                ),
+              ),
             )
           ],
         ),
@@ -138,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _login,
-              child: Text('Login'),
+              child: const Text('Login', style: TextStyle(color: Colors.black)),
             ),
           ],
         ),
@@ -146,7 +160,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
 
 class MenuPage extends StatelessWidget {
   @override

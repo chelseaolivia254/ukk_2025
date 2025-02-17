@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AddPelangganPage extends StatefulWidget {
-  const AddPelangganPage({super.key});
+class AddPelangganPageState extends StatefulWidget {
+  const AddPelangganPageState({super.key});
 
   @override
   _AddPelangganPageState createState() => _AddPelangganPageState();
 }
 
-class _AddPelangganPageState extends State<AddPelangganPage> {
+class _AddPelangganPageState extends State<AddPelangganPageState> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _namaPelangganController = TextEditingController();
-  final TextEditingController _alamatController = TextEditingController();
-  final TextEditingController _nomorTeleponController = TextEditingController();
+  final TextEditingController _NamaPelangganController = TextEditingController();
+  final TextEditingController _AlamatController = TextEditingController();
+  final TextEditingController _NomorTeleponController = TextEditingController();
 
   Future<void> _addPelanggan() async {
     if (_formKey.currentState!.validate()) {
-      final namaPelanggan = _namaPelangganController.text;
-      final alamat = _alamatController.text;
-      final nomorTelepon = _nomorTeleponController.text;
+      final NamaPelanggan = _NamaPelangganController.text;
+      final Alamat = _AlamatController.text;
+      final NomorTelepon = _NomorTeleponController.text;
 
       try {
-        final response = await Supabase.instance.client.from('pelanggan').insert({
-          'namaPelanggan': namaPelanggan,
-          'alamat': alamat,
-          'nomorTelepon': nomorTelepon,
+        final response = await Supabase.instance.client.from('Pelanggan').insert({
+          'NamaPelanggan': NamaPelanggan,
+          'Alamat': Alamat,
+          'NomorTelepon': NomorTelepon,
         });
 
         if (response != null) {
@@ -32,9 +32,9 @@ class _AddPelangganPageState extends State<AddPelangganPage> {
             const SnackBar(content: Text('Pelanggan berhasil ditambahkan!')),
           );
 
-          _namaPelangganController.clear();
-          _alamatController.clear();
-          _nomorTeleponController.clear();
+          _NamaPelangganController.clear();
+          _AlamatController.clear();
+          _NomorTeleponController.clear();
 
           Navigator.pop(context, true); // Kembali ke halaman utama dengan hasil sukses
         }
@@ -48,9 +48,9 @@ class _AddPelangganPageState extends State<AddPelangganPage> {
 
   @override
   void dispose() {
-    _namaPelangganController.dispose();
-    _alamatController.dispose();
-    _nomorTeleponController.dispose();
+    _NamaPelangganController.dispose();
+    _AlamatController.dispose();
+    _NomorTeleponController.dispose();
     super.dispose();
   }
 
@@ -68,7 +68,7 @@ class _AddPelangganPageState extends State<AddPelangganPage> {
           child: ListView(
             children: [
               TextFormField(
-                controller: _namaPelangganController,
+                controller: _NamaPelangganController,
                 decoration: const InputDecoration(
                   labelText: 'Nama Pelanggan',
                   border: OutlineInputBorder(),
@@ -82,7 +82,7 @@ class _AddPelangganPageState extends State<AddPelangganPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _alamatController,
+                controller: _AlamatController,
                 decoration: const InputDecoration(
                   labelText: 'Alamat',
                   border: OutlineInputBorder(),
@@ -96,7 +96,7 @@ class _AddPelangganPageState extends State<AddPelangganPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _nomorTeleponController,
+                controller: _NomorTeleponController,
                 decoration: const InputDecoration(
                   labelText: 'Nomor Telepon',
                   border: OutlineInputBorder(),
@@ -118,7 +118,19 @@ class _AddPelangganPageState extends State<AddPelangganPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.cyan[200],
                 ),
-                child: const Text('Simpan', style: TextStyle(color: Colors.white)),
+                child: Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 19, vertical: 15), // Adjust padding as needed
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey, // Set the background color of the bubble
+                  borderRadius: BorderRadius.circular(
+                      16), // Rounded corners for the bubble
+                ),
+                child: const Text(
+                  'Simpan',
+                  style: TextStyle(color: Colors.black), // Text color
+                ),
+              ),
               ),
             ],
           ),

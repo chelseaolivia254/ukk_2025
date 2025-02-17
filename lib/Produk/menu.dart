@@ -1,87 +1,112 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ukk_2025/main.dart';
-import 'package:ukk_2025/homePage.dart';
 
-
-
-class MenuPage extends StatefulWidget {
+class ProdukBookListPageState extends StatefulWidget {
   @override
-  _MenuPageState createState() => _MenuPageState();
+  _ProdukBookListPageState createState() => _ProdukBookListPageState();
 }
 
-class _MenuPageState extends State<MenuPage> {
-  List<Map<String, dynamic>>? foodMenu;
-  final List<Map<String, dynamic>> cart = [];
+class _ProdukBookListPageState extends State<ProdukBookListPageState> {
+  List<Map<String, dynamic>> foodMenu = []; // Inisialisasi foodMenu sebagai list kosong
+  final List<Map<String, dynamic>> cart = []; // Keranjang kosong
 
   @override
   void initState() {
     super.initState();
-    fetchProduct();
+    fetchProduct(); // Memanggil fetchProduct() saat inisialisasi
   }
 
-  fetchProduct() async {
-    final response = await Supabase.instance.client.from('produk');
-    if (response.data != null && response.data.isNotEmpty) {
-      setState(() {
-        foodMenu = List<Map<String, dynamic>>.from(response.data);
-      });
+  // Fungsi untuk mengambil data Produk dari Supabase
+  Future<void> fetchProduct() async {
+    try {
+      final response = await Supabase.instance.client.from('Produk').select();
+
+      // Cek jika data tersedia
+      if (response.isNotEmpty) {
+        setState(() {
+          foodMenu = List<Map<String, dynamic>>.from(response);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
+  // Fungsi untuk menambah item ke keranjang
   void _addToCart(Map<String, dynamic> item) {
     setState(() {
-      cart.add(item);
+      cart.add(item); // Menambahkan item ke keranjang
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${item['name']} ditambahkan ke keranjang')),
     );
   }
 
-  void _showCart(Map<String, dynamic> item) {
-    setState(() {
-      cart.add(item);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${item['name']} ditambahkan ke keranjang')));
-  }
-
-
+  // Fungsi untuk menampilkan daftar produk dalam bentuk list
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 4, // Ubah ini sesuai jumlah tab yang Anda inginkan
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('Menu'),
-          bottom: TabBar(
-            tabs: [
-              Tab(icon: Icon(Icons.food_bank)),
-              Tab(icon: Icon(Icons.local_drink)),
-              Tab(icon: Icon(Icons.local_pizza)),
-              Tab(icon: Icon(Icons.fastfood)),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Produk Book List'),
+        backgroundColor: Colors.blueAccent,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart),
+            onPressed: () {
+              // Tindakan membuka keranjang produk, bisa diarahkan ke halaman lain jika perlu
+              _showCart();
+            },
           ),
-        ),
-        body: foodMenu == null
-            ? Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                itemCount: foodMenu!.length,
-                itemBuilder: (context, index) {
-                  final item = foodMenu![index];
-                  return ListTile(
-                    title: Text(item['name']),
-                    subtitle: Text('Harga: ${item['price']}'),
+        ],
+      ),
+      body: foodMenu.isEmpty
+          ? Center(child: CircularProgressIndicator()) // Tampilkan loading jika data belum diambil
+          : ListView.builder(
+              itemCount: foodMenu.length,
+              itemBuilder: (context, index) {
+                final item = foodMenu[index];
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  child: ListTile(
+                    title: Text(item['name'] ?? 'Tanpa Nama'),
+                    subtitle: Text('Harga: ${item['price'] ?? 'Tidak Tersedia'}'),
                     trailing: IconButton(
                       icon: Icon(Icons.add),
-                      onPressed: () => _addToCart(item),
+                      onPressed: () => _addToCart(item), // Menambah item ke keranjang
                     ),
-                  );
-                },
-              ),
-      ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+
+  // Fungsi untuk menampilkan keranjang
+  void _showCart() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Keranjang Belanja'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: cart.map((item) {
+              return ListTile(
+                title: Text(item['name'] ?? 'Tanpa Nama'),
+                subtitle: Text('Harga: ${item['price'] ?? 'Tidak Tersedia'}'),
+              );
+            }).toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Menutup dialog
+              },
+              child: Text('Tutup'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
-
-

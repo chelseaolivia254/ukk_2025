@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ukk_2025/main.dart';
-import 'package:ukk_2025/Produk/menu.dart';
-import 'package:ukk_2025/Pelanggan/dataPelanggan.dart';
+import 'package:ukk_2025/profilePage.dart';
 
 void main() {
   runApp(MaterialApp(
-    home: HomePage(),
+    home: HomePageState(),
   ));
 }
 
-class HomePage extends StatefulWidget {
+class HomePageState extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePageState> {
   List<Map<String, dynamic>> cart = [];
   List<Map<String, dynamic>> foodMenu = [];
   List<Map<String, dynamic>> filteredMenu = [];
@@ -27,7 +26,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     fetchProduct();
     searchController.addListener(_filterMenu);
-    _tabController = TabController(length: 4, vsync: this);
   }
 
   Future<void> fetchProduct() async {
@@ -99,10 +97,10 @@ class _HomePageState extends State<HomePage> {
               Tab(icon: Icon(Icons.people), text: 'Pelanggan'),
               Tab(icon: Icon(Icons.inventory), text: 'Produk'),
               Tab(icon: Icon(Icons.shopping_cart), text: 'Penjualan'),
-              Tab(
-                  icon: Icon(Icons.account_balance_wallet),
-                  text: 'Detail Penjualan'),
+              Tab(icon: Icon(Icons.account_balance_wallet),text: 'Detail Penjualan'),
             ],
+            labelColor: Colors.black,
+            unselectedLabelColor: Colors.black,
           ),
           actions: [
             IconButton(
@@ -118,7 +116,7 @@ class _HomePageState extends State<HomePage> {
               DrawerHeader(
                 decoration: BoxDecoration(color: Colors.blueGrey[600]),
                 child: Text(
-                  'Menu',
+                  'Profil',
                   style: TextStyle(color: Colors.black, fontSize: 24),
                 ),
               ),
@@ -128,8 +126,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => PelangganBookListPage()),
+                    MaterialPageRoute(builder: (context) => ProfilePage()),
                   );
                 },
               ),
@@ -154,40 +151,42 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        body: Column(
+        body: TabBarView(
           children: [
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  labelText: 'Cari Produk',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.search),
-                ),
-              ),
-            ),
-            Expanded(
-              child: filteredMenu.isEmpty
-                  ? Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: filteredMenu.length,
-                      itemBuilder: (context, index) {
-                        final item = filteredMenu[index];
-                        return ListTile(
-                          title: Text(item['namaproduk']),
-                          subtitle: Text('Harga: Rp ${item['harga']}'),
-                          trailing: IconButton(
-                            icon: Icon(Icons.add_shopping_cart),
-                            onPressed: () => _addToCart(item),
-                          ),
-                        );
-                      },
-                    ),
-            )
+            PelangganBookListPageState(), // Untuk menampilkan Pelanggan page
+            ProdukBookListPageState(),    // Untuk menampilkan Produk page
+            AddPenjualanBookListPageState(), // Untuk menampilkan Penjualan page
+            Center(child: Text('Detail Penjualan')), // Add actual content for 'Detail Penjualan'
           ],
         ),
       ),
+    );
+  }
+}
+
+class PelangganBookListPageState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Halaman Pelanggan'),
+    );
+  }
+}
+
+class ProdukBookListPageState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Produk Page'),
+    );
+  }
+}
+
+class AddPenjualanBookListPageState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Penjualan Page'),
     );
   }
 }
@@ -200,8 +199,7 @@ class RegistrationPage extends StatefulWidget {
 class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final TextEditingController confirmPasswordController =TextEditingController();
   String? _emailError;
   String? _passwordError;
   String? _confirmPasswordError;
@@ -285,7 +283,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _register,
-              child: Text('Daftar'),
+             child: Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 19, vertical: 15), // Adjust padding as needed
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey, // Set the background color of the bubble
+                  borderRadius: BorderRadius.circular(
+                      16), // Rounded corners for the bubble
+                ),
+                child: const Text(
+                  'Daftar',
+                  style: TextStyle(color: Colors.black), // Text color
+                ),
+              ),
             ),
           ],
         ),

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ukk_2025/main.dart';
+
 
 class UpdateBookPage extends StatefulWidget {
   final int id; // ID pelanggan untuk diupdate
-  final String namaPelanggan;
-  final String alamat;
-  final String nomorTelepon;
+  final String NamaPelanggan;
+  final String Alamat;
+  final String NomorTelepon;
 
   const UpdateBookPage({
     super.key,
     required this.id,
-    required this.namaPelanggan,
-    required this.alamat,
-    required this.nomorTelepon,
+    required this.NamaPelanggan,
+    required this.Alamat,
+    required this.NomorTelepon,
   });
 
   @override
@@ -22,33 +22,33 @@ class UpdateBookPage extends StatefulWidget {
 
 class _UpdateBookPageState extends State<UpdateBookPage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _namaPelangganController;
-  late TextEditingController _alamatController;
-  late TextEditingController _nomorTeleponController;
+  late TextEditingController _NamaPelangganController;
+  late TextEditingController _AlamatController;
+  late TextEditingController _NomorTeleponController;
 
   @override
   void initState() {
     super.initState();
     // Inisialisasi controller dengan nilai awal
-    _namaPelangganController = TextEditingController(text: widget.namaPelanggan);
-    _alamatController = TextEditingController(text: widget.alamat);
-    _nomorTeleponController = TextEditingController(text: widget.nomorTelepon);
+    _NamaPelangganController = TextEditingController(text: widget.NamaPelanggan);
+    _AlamatController = TextEditingController(text: widget.Alamat);
+    _NomorTeleponController = TextEditingController(text: widget.NomorTelepon);
   }
 
   Future<void> _updateBook() async {
     if (_formKey.currentState!.validate()) {
-      final namaPelanggan = _namaPelangganController.text;
-      final alamat = _alamatController.text;
-      final nomorTelepon = _nomorTeleponController.text;
+      final NamaPelanggan = _NamaPelangganController.text;
+      final Alamat = _AlamatController.text;
+      final NomorTelepon = _NomorTeleponController.text;
 
       try {
         // Kirim data update ke Supabase
         final response = await Supabase.instance.client
-            .from('pelanggan')
+            .from('Pelanggan')
             .update({
-              'namaPelanggan': namaPelanggan,
-              'alamat': alamat,
-              'nomorTelepon': nomorTelepon,
+              'NamaPelanggan': NamaPelanggan,
+              'Alamat': Alamat,
+              'NomorTelepon': NomorTelepon,
             })
             .eq('id', widget.id);
 
@@ -72,9 +72,9 @@ class _UpdateBookPageState extends State<UpdateBookPage> {
 
   @override
   void dispose() {
-    _namaPelangganController.dispose();
-    _alamatController.dispose();
-    _nomorTeleponController.dispose();
+    _NamaPelangganController.dispose();
+    _AlamatController.dispose();
+    _NomorTeleponController.dispose();
     super.dispose();
   }
 
@@ -92,7 +92,7 @@ class _UpdateBookPageState extends State<UpdateBookPage> {
           child: ListView(
             children: [
               TextFormField(
-                controller: _namaPelangganController,
+                controller: _NamaPelangganController,
                 decoration: const InputDecoration(
                   labelText: 'Nama Pelanggan',
                   border: OutlineInputBorder(),
@@ -106,7 +106,7 @@ class _UpdateBookPageState extends State<UpdateBookPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _alamatController,
+                controller: _AlamatController,
                 decoration: const InputDecoration(
                   labelText: 'Alamat',
                   border: OutlineInputBorder(),
@@ -120,7 +120,7 @@ class _UpdateBookPageState extends State<UpdateBookPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _nomorTeleponController,
+                controller: _NomorTeleponController,
                 decoration: const InputDecoration(
                   labelText: 'Nomor Telepon',
                   border: OutlineInputBorder(),
@@ -140,7 +140,7 @@ class _UpdateBookPageState extends State<UpdateBookPage> {
                 ),
                 child: const Text(
                   'Simpan Perubahan',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
             ],
