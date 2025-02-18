@@ -2,10 +2,26 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Halaman Utama untuk Menampilkan Daftar Pelanggan
-class PelangganBookListPage extends StatefulWidget {
-  const PelangganBookListPage({Key? key}) : super(key: key);
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://eipxilvxaevdrtezggrw.supabase.co', 
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHhpbHZ4YWV2ZHJ0ZXpnZ3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDg4NTMsImV4cCI6MjA1NDk4NDg1M30.66T2kAZ_unpK10-el_Xe5ebCJxKRG2gft7OaRuQxRp8',
+  );
+  runApp(MyApp());
+}
 
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: PelangganBookListPage(),
+    );
+  }
+}
+
+class PelangganBookListPage extends StatefulWidget {
   @override
   _PelangganBookListPageState createState() => _PelangganBookListPageState();
 }
@@ -19,7 +35,6 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
     fetchPelanggan();
   }
 
-  // Fungsi untuk mengambil data pelanggan dari Supabase
   Future<void> fetchPelanggan() async {
     try {
       final response = await Supabase.instance.client.from('Pelanggan').select();
@@ -31,14 +46,19 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
     }
   }
 
+  Future<void> deletePelanggan(int id) async {
+    try {
+      await Supabase.instance.client.from('Pelanggan').delete().match({'PelangganID': id});
+      fetchPelanggan();
+    } catch (e) {
+      print('Error deleting pelanggan: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text('Daftar Pelanggan'),
-        backgroundColor: Colors.blueAccent,
-      ),
       body: pelanggan.isEmpty
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
@@ -68,20 +88,19 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            // Tambahkan logika untuk navigasi ke halaman edit pelanggan
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PelangganAddPage(customer: customer),
+                              ),
+                            );
+                            if (result == true) fetchPelanggan();
                           },
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            // Hapus pelanggan dari database Supabase
-                            await Supabase.instance.client
-                                .from('Pelanggan')
-                                .delete()
-                                .eq('PelangganID', customer['PelangganID']);
-                            fetchPelanggan(); // Refresh data setelah penghapusan
-                          },
+                          onPressed: () => deletePelanggan(customer['PelangganID']),
                         ),
                       ],
                     ),
@@ -95,9 +114,7 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
             context,
             MaterialPageRoute(builder: (context) => PelangganAddPage()),
           );
-          if (result == true) {
-            fetchPelanggan(); // Refresh data jika pelanggan berhasil ditambahkan
-          }
+          if (result == true) fetchPelanggan();
         },
         backgroundColor: Colors.blueAccent,
         child: const Icon(Icons.add, color: Colors.white),
@@ -106,8 +123,11 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
   }
 }
 
-// Halaman untuk Menambahkan Pelanggan Baru
 class PelangganAddPage extends StatefulWidget {
+  final Map<String, dynamic>? customer;
+
+  PelangganAddPage({this.customer});
+
   @override
   _PelangganAddPageState createState() => _PelangganAddPageState();
 }
@@ -117,19 +137,36 @@ class _PelangganAddPageState extends State<PelangganAddPage> {
   final TextEditingController addressController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
 
-  // Fungsi untuk menambahkan pelanggan baru ke Supabase
-  Future<void> addPelanggan() async {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.customer != null) {
+      nameController.text = widget.customer!['NamaPelanggan'];
+      addressController.text = widget.customer!['Alamat'];
+      phoneController.text = widget.customer!['NomorTelepon'];
+    }
+  }
+
+  Future<void> savePelanggan() async {
     try {
-      await Supabase.instance.client.from('Pelanggan').insert([
-        {
+      if (widget.customer == null) {
+        await Supabase.instance.client.from('Pelanggan').insert([
+          {
+            'NamaPelanggan': nameController.text,
+            'Alamat': addressController.text,
+            'NomorTelepon': phoneController.text,
+          }
+        ]);
+      } else {
+        await Supabase.instance.client.from('Pelanggan').update({
           'NamaPelanggan': nameController.text,
           'Alamat': addressController.text,
           'NomorTelepon': phoneController.text,
-        }
-      ]);
-      Navigator.pop(context, true); // Kembali ke halaman sebelumnya dengan indikasi berhasil
+        }).match({'PelangganID': widget.customer!['PelangganID']});
+      }
+      Navigator.pop(context, true);
     } catch (e) {
-      print('Error adding pelanggan: $e');
+      print('Error saving pelanggan: $e');
     }
   }
 
@@ -137,32 +174,18 @@ class _PelangganAddPageState extends State<PelangganAddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tambah Pelanggan'),
-        backgroundColor: Colors.blueAccent,
+        title: Text(widget.customer == null ? 'Tambah Pelanggan' : 'Edit Pelanggan'),
+        backgroundColor: const Color.fromARGB(255, 149, 214, 245),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(labelText: 'Nama Pelanggan'),
-            ),
-            TextField(
-              controller: addressController,
-              decoration: InputDecoration(labelText: 'Alamat'),
-            ),
-            TextField(
-              controller: phoneController,
-              decoration: InputDecoration(labelText: 'Nomor Telepon'),
-              keyboardType: TextInputType.phone,
-            ),
+            TextField(controller: nameController, decoration: InputDecoration(labelText: 'Nama Pelanggan')),
+            TextField(controller: addressController, decoration: InputDecoration(labelText: 'Alamat')),
+            TextField(controller: phoneController, decoration: InputDecoration(labelText: 'Nomor Telepon'), keyboardType: TextInputType.phone),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: addPelanggan,
-              child: Text('Simpan Pelanggan'),
-            ),
+            ElevatedButton(onPressed: savePelanggan, child: Text('Simpan')),
           ],
         ),
       ),

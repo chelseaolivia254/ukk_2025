@@ -2,8 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ukk_2025/main.dart';
 import 'package:ukk_2025/profilePage.dart';
+import 'package:ukk_2025/Pelanggan/dataPelanggan.dart';
+import 'package:ukk_2025/Penjualan/dataPenjualan.dart';
+import 'package:ukk_2025/Produk/menu.dart';
 
-void main() {
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://eipxilvxaevdrtezggrw.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHhpbHZ4YWV2ZHJ0ZXpnZ3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDg4NTMsImV4cCI6MjA1NDk4NDg1M30.66T2kAZ_unpK10-el_Xe5ebCJxKRG2gft7OaRuQxRp8',
+  );
+
   runApp(MaterialApp(
     home: HomePageState(),
   ));
@@ -14,73 +25,21 @@ class HomePageState extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePageState> {
-  List<Map<String, dynamic>> cart = [];
-  List<Map<String, dynamic>> foodMenu = [];
-  List<Map<String, dynamic>> filteredMenu = [];
-  TextEditingController searchController = TextEditingController();
+class _HomePageState extends State<HomePageState> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    fetchProduct();
-    searchController.addListener(_filterMenu);
-  }
-
-  Future<void> fetchProduct() async {
-    try {
-      var response = await Supabase.instance.client.from('produk').select();
-      if (response.isNotEmpty) {
-        setState(() {
-          foodMenu = List<Map<String, dynamic>>.from(response);
-          filteredMenu = foodMenu; // Initialize filteredMenu
-        });
-      }
-    } catch (e) {
-      print("Error fetching products: $e");
-    }
-  }
-
-  void _filterMenu() {
-    setState(() {
-      filteredMenu = foodMenu
-          .where((item) => item['namaproduk']
-              .toString()
-              .toLowerCase()
-              .contains(searchController.text.toLowerCase()))
-          .toList();
-    });
-  }
-
-  void _addToCart(Map<String, dynamic> item) {
-    setState(() {
-      cart.add(item);
-    });
-  }
-
-  void _showCart() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return ListView.builder(
-          itemCount: cart.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(cart[index]['namaproduk']),
-              subtitle: Text('Harga: Rp ${cart[index]['harga']}'),
-            );
-          },
-        );
-      },
-    );
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   void _logout() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => LoginPage()), // Ensure LoginPage exists
+        builder: (context) => LoginPage(),
+      ),
     );
   }
 
@@ -90,25 +49,24 @@ class _HomePageState extends State<HomePageState> {
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Ci Coffee Shop'),
+          title: Text('HOME'),
           backgroundColor: Colors.blueGrey[500],
           bottom: TabBar(
+            controller: _tabController,
             tabs: [
               Tab(icon: Icon(Icons.people), text: 'Pelanggan'),
               Tab(icon: Icon(Icons.inventory), text: 'Produk'),
               Tab(icon: Icon(Icons.shopping_cart), text: 'Penjualan'),
-              Tab(icon: Icon(Icons.account_balance_wallet),text: 'Detail Penjualan'),
+              Tab(icon: Icon(Icons.account_balance_wallet), text: 'Detail Penjualan'),
+              
+             
             ],
             labelColor: Colors.black,
             unselectedLabelColor: Colors.black,
           ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.shopping_cart),
-              onPressed: _showCart,
-            ),
-          ],
         ),
+
+        
         drawer: Drawer(
           child: ListView(
             padding: EdgeInsets.zero,
@@ -152,11 +110,12 @@ class _HomePageState extends State<HomePageState> {
           ),
         ),
         body: TabBarView(
+          controller: _tabController,
           children: [
-            PelangganBookListPageState(), // Untuk menampilkan Pelanggan page
-            ProdukBookListPageState(),    // Untuk menampilkan Produk page
-            AddPenjualanBookListPageState(), // Untuk menampilkan Penjualan page
-            Center(child: Text('Detail Penjualan')), // Add actual content for 'Detail Penjualan'
+            PelangganBookListPage(), //untuk menampilkan halaman Pelanggan
+            ProdukBookListPageState(),
+            PenjualanBookListPage(),
+        
           ],
         ),
       ),
@@ -164,33 +123,173 @@ class _HomePageState extends State<HomePageState> {
   }
 }
 
-class PelangganBookListPageState extends StatelessWidget {
+// ==========================
+//  CLASS PELANGGAN
+// ==========================
+class PelangganPage extends StatefulWidget {
+  @override
+  _PelangganPageState createState() => _PelangganPageState();
+}
+
+class _PelangganPageState extends State<PelangganPage> {
+  Future<List<Map<String, dynamic>>> fetchPelanggan() async {
+    try {
+      var response = await Supabase.instance.client.from('Pelanggan').select();
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print("Error fetching pelanggan: $e");
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Halaman Pelanggan'),
+    return Scaffold(
+      appBar: AppBar(title: Text('Pelanggan')),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchPelanggan(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('Tidak ada pelanggan tersedia.'));
+          }
+
+          var pelangganList = snapshot.data!;
+          return ListView.builder(
+            itemCount: pelangganList.length,
+            itemBuilder: (context, index) {
+              final item = pelangganList[index];
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                child: ListTile(
+                  title: Text(item['Nama'] ?? 'Nama Tidak Tersedia'),
+                  subtitle: Text('Email: ${item['Email'] ?? 'Email Tidak Tersedia'}'),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
 
-class ProdukBookListPageState extends StatelessWidget {
+// ==========================
+//  CLASS PRODUK
+// ==========================
+class ProdukBookListPage extends StatefulWidget {
+  @override
+  _ProdukBookListPageState createState() => _ProdukBookListPageState();
+}
+
+class _ProdukBookListPageState extends State<ProdukBookListPage> {
+  Future<List<Map<String, dynamic>>> fetchProduct() async {
+    try {
+      var response = await Supabase.instance.client.from('Produk').select();
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print("Error fetching products: $e");
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Produk Page'),
+    return Scaffold(
+      appBar: AppBar(title: Text('Produk')),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchProduct(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('Tidak ada produk tersedia.'));
+          }
+
+          var produkList = snapshot.data!;
+          return ListView.builder(
+            itemCount: produkList.length,
+            itemBuilder: (context, index) {
+              final item = produkList[index];
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                child: ListTile(
+                  title: Text(item['NamaProduk'] ?? 'Produk Tidak Tersedia'),
+                  subtitle: Text('Harga: Rp ${item['Harga'] ?? 'Harga Tidak Tersedia'}'),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+        
+
+// ==========================
+//  CLASS PENJUALAN
+// ==========================
+class PenjualanPage extends StatefulWidget {
+  @override
+  _PenjualanPageState createState() => _PenjualanPageState();
+}
+
+class _PenjualanPageState extends State<PenjualanPage> {
+  Future<List<Map<String, dynamic>>> fetchPenjualan() async {
+    try {
+      var response = await Supabase.instance.client.from('Penjualan').select();
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print("Error fetching Penjualan: $e");
+      return [];
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Penjualan')),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchPenjualan(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('Tidak ada penjualan tersedia.'));
+          }
+
+          var penjualanList = snapshot.data!;
+          return ListView.builder(
+            itemCount: penjualanList.length,
+            itemBuilder: (context, index) {
+              final item = penjualanList[index];
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                child: ListTile(
+                  title: Text(item['Tanggal'] ?? 'Tanggal Tidak Tersedia'),
+                  subtitle: Text('Total: Rp ${item['Total'] ?? 'Total Tidak Tersedia'}'),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
 
-class AddPenjualanBookListPageState extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Penjualan Page'),
-    );
-  }
-}
 
+// ==========================
+//  CLASS REGISTRASI
+// ==========================
 class RegistrationPage extends StatefulWidget {
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
@@ -199,7 +298,7 @@ class RegistrationPage extends StatefulWidget {
 class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
   String? _emailError;
   String? _passwordError;
   String? _confirmPasswordError;
@@ -283,17 +382,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _register,
-             child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: 19, vertical: 15), // Adjust padding as needed
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 19, vertical: 15),
                 decoration: BoxDecoration(
-                  color: Colors.blueGrey, // Set the background color of the bubble
-                  borderRadius: BorderRadius.circular(
-                      16), // Rounded corners for the bubble
+                  color: Colors.blueGrey,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Text(
                   'Daftar',
-                  style: TextStyle(color: Colors.black), // Text color
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
             ),

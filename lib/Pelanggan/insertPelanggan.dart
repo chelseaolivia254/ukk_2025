@@ -122,7 +122,7 @@ class _AddPelangganPageState extends State<AddPelangganPageState> {
                 padding: EdgeInsets.symmetric(
                     horizontal: 19, vertical: 15), // Adjust padding as needed
                 decoration: BoxDecoration(
-                  color: Colors.blueGrey, // Set the background color of the bubble
+                  color: Colors.blue, // Set the background color of the bubble
                   borderRadius: BorderRadius.circular(
                       16), // Rounded corners for the bubble
                 ),

@@ -66,7 +66,7 @@ class _HomePageState extends State<HomePage> {
               DrawerHeader(
                 decoration: BoxDecoration(color: Colors.blueGrey[600]),
                 child: Text(
-                  'Menu',
+                  'Profil',
                   style: TextStyle(color: Colors.white, fontSize: 24),
                 ),
               ),
