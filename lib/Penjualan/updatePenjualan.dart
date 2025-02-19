@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ukk_2025/Penjualan/dataPenjualan.dart';
 
 
-class UpdateBookPage extends StatefulWidget {
+class UpdatePenjualanBookPage extends StatefulWidget {
   final int id; // ID pelanggan untuk diupdate
   final String TanggalPenjualan;
   final String TotalHarga;
   final String PelangganID;
 
-  const UpdateBookPage({
+  const UpdatePenjualanBookPage({
     super.key,
     required this.id,
     required this.TanggalPenjualan,
@@ -17,10 +18,10 @@ class UpdateBookPage extends StatefulWidget {
   });
 
   @override
-  _UpdateBookPageState createState() => _UpdateBookPageState();
+  _UpdatePenjualanBookPageState createState() => _UpdatePenjualanBookPageState();
 }
 
-class _UpdateBookPageState extends State<UpdateBookPage> {
+class _UpdatePenjualanBookPageState extends State<UpdatePenjualanBookPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _TanggalPenjualanController;
   late TextEditingController _TotalHargaController;

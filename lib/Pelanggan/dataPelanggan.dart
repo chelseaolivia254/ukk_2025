@@ -5,8 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
-    url: 'https://eipxilvxaevdrtezggrw.supabase.co', 
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHhpbHZ4YWV2ZHJ0ZXpnZ3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDg4NTMsImV4cCI6MjA1NDk4NDg1M30.66T2kAZ_unpK10-el_Xe5ebCJxKRG2gft7OaRuQxRp8',
+    url: 'https://eipxilvxaevdrtezggrw.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHhpbHZ4YWV2ZHJ0ZXpnZ3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDg4NTMsImV4cCI6MjA1NDk4NDg1M30.66T2kAZ_unpK10-el_Xe5ebCJxKRG2gft7OaRuQxRp8',
   );
   runApp(MyApp());
 }
@@ -37,7 +38,8 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
 
   Future<void> fetchPelanggan() async {
     try {
-      final response = await Supabase.instance.client.from('Pelanggan').select();
+      final response =
+          await Supabase.instance.client.from('Pelanggan').select();
       setState(() {
         pelanggan = List<Map<String, dynamic>>.from(response);
       });
@@ -48,7 +50,10 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
 
   Future<void> deletePelanggan(int id) async {
     try {
-      await Supabase.instance.client.from('Pelanggan').delete().match({'PelangganID': id});
+      await Supabase.instance.client
+          .from('Pelanggan')
+          .delete()
+          .match({'PelangganID': id});
       fetchPelanggan();
     } catch (e) {
       print('Error deleting pelanggan: $e');
@@ -67,18 +72,22 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
                 final customer = pelanggan[index];
                 return Card(
                   color: Colors.blue[50],
-                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: ListTile(
-                    title: Text(customer['NamaPelanggan'] ?? 'Nama tidak tersedia'),
+                    title: Text(
+                        customer['NamaPelanggan'] ?? 'Nama tidak tersedia'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           customer['Alamat'] ?? 'Alamat tidak tersedia',
-                          style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 14),
+                          style: const TextStyle(
+                              fontStyle: FontStyle.italic, fontSize: 14),
                         ),
                         Text(
-                          customer['NomorTelepon'] ?? 'Nomor telepon tidak tersedia',
+                          customer['NomorTelepon'] ??
+                              'Nomor telepon tidak tersedia',
                           style: const TextStyle(fontSize: 12),
                         ),
                       ],
@@ -92,7 +101,8 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
                             final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => PelangganAddPage(customer: customer),
+                                builder: (context) =>
+                                    PelangganAddPage(customer: customer),
                               ),
                             );
                             if (result == true) fetchPelanggan();
@@ -100,7 +110,8 @@ class _PelangganBookListPageState extends State<PelangganBookListPage> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => deletePelanggan(customer['PelangganID']),
+                          onPressed: () =>
+                              deletePelanggan(customer['PelangganID']),
                         ),
                       ],
                     ),
@@ -174,18 +185,73 @@ class _PelangganAddPageState extends State<PelangganAddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.customer == null ? 'Tambah Pelanggan' : 'Edit Pelanggan'),
-        backgroundColor: const Color.fromARGB(255, 149, 214, 245),
+        title: Text(
+            widget.customer == null ? 'Tambah Pelanggan' : 'Edit Pelanggan'),
+        backgroundColor: const Color.fromARGB(255, 104, 187, 255),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(controller: nameController, decoration: InputDecoration(labelText: 'Nama Pelanggan')),
-            TextField(controller: addressController, decoration: InputDecoration(labelText: 'Alamat')),
-            TextField(controller: phoneController, decoration: InputDecoration(labelText: 'Nomor Telepon'), keyboardType: TextInputType.phone),
-            SizedBox(height: 20),
-            ElevatedButton(onPressed: savePelanggan, child: Text('Simpan')),
+            // Input Nama Pelanggan
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: 'Nama Pelanggan',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              ),
+            ),
+            SizedBox(height: 16), // Jarak antar input
+
+            // Input Alamat
+            TextField(
+              controller: addressController,
+              decoration: InputDecoration(
+                labelText: 'Alamat',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              ),
+            ),
+            SizedBox(height: 16),
+
+            // Input Nomor Telepon
+            TextField(
+              controller: phoneController,
+              decoration: InputDecoration(
+                labelText: 'Nomor Telepon',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            SizedBox(height: 24), // Jarak lebih besar sebelum tombol
+
+            // Tombol Simpan
+            ElevatedButton(
+              onPressed: savePelanggan,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                padding: EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Simpan',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+            ),
           ],
         ),
       ),

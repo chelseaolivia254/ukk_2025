@@ -1,6 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ukk_2025/Produk/tambahProduk.dart';
+import 'package:ukk_2025/struk.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://eipxilvxaevdrtezggrw.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHhpbHZ4YWV2ZHJ0ZXpnZ3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDg4NTMsImV4cCI6MjA1NDk4NDg1M30.66T2kAZ_unpK10-el_Xe5ebCJxKRG2gft7OaRuQxRp8',
+  );
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: ProdukBookListPageState(), // Perbaikan dari sebelumnya
+    );
+  }
+}
 
 class ProdukBookListPageState extends StatefulWidget {
   @override
@@ -8,24 +28,25 @@ class ProdukBookListPageState extends StatefulWidget {
 }
 
 class _ProdukBookListPageState extends State<ProdukBookListPageState> {
-  List<Map<String, dynamic>> foodMenu = []; // Daftar produk
-  final List<Map<String, dynamic>> cart = []; // Keranjang belanja
+  List<Map<String, dynamic>> foodMenu = [];
+  List<Map<String, dynamic>> filteredMenu = [];
+  List<Map<String, dynamic>> cart = [];
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    fetchProduct(); // Ambil data produk saat pertama kali membuka halaman
+    fetchProduct();
+    searchController.addListener(_filterProducts);
   }
 
-  // Fungsi mengambil data Produk dari Supabase
   Future<void> fetchProduct() async {
     try {
       final response = await Supabase.instance.client.from('Produk').select();
-      if (response.isNotEmpty) {
-        setState(() {
-          foodMenu = List<Map<String, dynamic>>.from(response);
-        });
-      }
+      setState(() {
+        foodMenu = List<Map<String, dynamic>>.from(response);
+        filteredMenu = foodMenu;
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
@@ -33,113 +54,90 @@ class _ProdukBookListPageState extends State<ProdukBookListPageState> {
     }
   }
 
-  // Fungsi menambah produk ke keranjang
+  void _filterProducts() {
+    String query = searchController.text.toLowerCase();
+    setState(() {
+      filteredMenu = foodMenu
+          .where((item) => item['NamaProduk']
+              .toString()
+              .toLowerCase()
+              .contains(query))
+          .toList();
+    });
+  }
+
   void _addToCart(Map<String, dynamic> item) {
     setState(() {
-      cart.add(item);
+      int index = cart.indexWhere((cartItem) => cartItem['id'] == item['id']);
+      if (index != -1) {
+        cart[index]['quantity']++;
+      } else {
+        cart.add({...item, 'quantity': 1});
+      }
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${item['name']} ditambahkan ke keranjang')),
-    );
   }
 
-  // Fungsi menghapus produk dari database
-  Future<void> _deleteProduct(int productId) async {
-    try {
-      await Supabase.instance.client.from('Produk').delete().match({'id': productId});
-      setState(() {
-        foodMenu.removeWhere((item) => item['id'] == productId);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Produk berhasil dihapus')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menghapus produk: $e')),
-      );
-    }
+  void _updateQuantity(int index, int quantity) {
+    setState(() {
+      if (quantity > 0) {
+        cart[index]['quantity'] = quantity;
+      } else {
+        cart.removeAt(index);
+      }
+    });
   }
 
-  // Fungsi untuk menampilkan dialog Edit Produk
-  void _editProduct(Map<String, dynamic> item) {
-    TextEditingController nameController = TextEditingController(text: item['name']);
-    TextEditingController priceController = TextEditingController(text: item['price'].toString());
-    TextEditingController stockController = TextEditingController(text: item['stock'].toString());
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Edit Produk'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Nama Produk'),
-              ),
-              TextField(
-                controller: priceController,
-                decoration: InputDecoration(labelText: 'Harga'),
-                keyboardType: TextInputType.number,
-              ),
-              TextField(
-                controller: stockController,
-                decoration: InputDecoration(labelText: 'Stok'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  await Supabase.instance.client.from('Produk').update({
-                    'name': nameController.text,
-                    'price': int.parse(priceController.text),
-                    'stock': int.parse(stockController.text),
-                  }).match({'id': item['id']});
-
-                  fetchProduct(); // Refresh data
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Produk berhasil diperbarui')),
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal memperbarui produk: $e')),
-                  );
-                }
-              },
-              child: Text('Simpan'),
-            ),
-          ],
-        );
-      },
-    );
+  double _calculateTotal() {
+    return cart.fold(0, (sum, item) => sum + (item['Harga'] * item['quantity']));
   }
 
-  // Fungsi untuk menampilkan keranjang
   void _showCart() {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text('Keranjang Belanja'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: cart.map((item) {
-              return ListTile(
-                title: Text(item['name'] ?? 'Tanpa Nama'),
-                subtitle: Text('Harga: ${item['price'] ?? 'Tidak Tersedia'}'),
-              );
-            }).toList(),
-          ),
+          content: cart.isEmpty
+              ? Text('Keranjang kosong')
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: cart.asMap().entries.map((entry) {
+                    int index = entry.key;
+                    var item = entry.value;
+                    return ListTile(
+                      title: Text(item['NamaProduk']),
+                      subtitle: Text('Harga: ${item['Harga']} x ${item['quantity']}'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.remove),
+                            onPressed: () => _updateQuantity(index, item['quantity'] - 1),
+                          ),
+                          Text('${item['quantity']}'),
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () => _updateQuantity(index, item['quantity'] + 1),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
           actions: [
+            Text('Total: Rp${_calculateTotal()}'),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Tutup dialog sebelum pindah ke struk
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => StrukPageState(cart: cart),// Pindah ke halaman struk
+                  ),
+                );
+              },
+              child: Text('Checkout'),
+            ),
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text('Tutup'),
@@ -153,50 +151,70 @@ class _ProdukBookListPageState extends State<ProdukBookListPageState> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: foodMenu.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: foodMenu.length,
-              itemBuilder: (context, index) {
-                final item = foodMenu[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                  child: ListTile(
-                    title: Text(item['name'] ?? 'Tanpa Nama'),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Harga: ${item['price'] ?? 'Tidak Tersedia'}'),
-                        Text('Stok: ${item['stock'] ?? 'Tidak Tersedia'}'),
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () => _editProduct(item),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteProduct(item['id']),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+      appBar: AppBar(
+        title: Text('Daftar Produk'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart),
+            onPressed: _showCart,
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                labelText: 'Cari Produk',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
             ),
-             floatingActionButton: FloatingActionButton(
+          ),
+          Expanded(
+            child: filteredMenu.isEmpty
+                ? Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: filteredMenu.length,
+                    itemBuilder: (context, index) {
+                      final item = filteredMenu[index];
+                      return Card(
+                        margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                        child: ListTile(
+                          title: Text(item['NamaProduk'] ?? 'Nama Produk'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Harga: ${item['Harga'] ?? 'Tidak Tersedia'}'),
+                              Text('Stok: ${item['Stok'] ?? 'Tidak Tersedia'}'),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(Icons.shopping_cart_checkout, color: Colors.green),
+                            onPressed: () => _addToCart(item),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) =>  AddProductPage()),
+            MaterialPageRoute(builder: (context) => AddProductPage()), // Halaman tambah produk
           );
           if (result == true) {
             fetchProduct();
           }
         },
+        
         child: const Icon(Icons.add),
       ),
     );

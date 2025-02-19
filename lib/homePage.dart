@@ -115,6 +115,8 @@ class _HomePageState extends State<HomePageState> with SingleTickerProviderState
             PelangganBookListPage(), //untuk menampilkan halaman Pelanggan
             ProdukBookListPageState(),
             PenjualanBookListPage(),
+            
+            
         
           ],
         ),
@@ -136,6 +138,7 @@ class _PelangganPageState extends State<PelangganPage> {
     try {
       var response = await Supabase.instance.client.from('Pelanggan').select();
       return List<Map<String, dynamic>>.from(response);
+      List<Map<String, dynamic>> _cart = [];
     } catch (e) {
       print("Error fetching pelanggan: $e");
       return [];

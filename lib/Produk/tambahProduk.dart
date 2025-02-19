@@ -1,5 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ukk_2025/homePage.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://eipxilvxaevdrtezggrw.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHhpbHZ4YWV2ZHJ0ZXpnZ3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDg4NTMsImV4cCI6MjA1NDk4NDg1M30.66T2kAZ_unpK10-el_Xe5ebCJxKRG2gft7OaRuQxRp8',
+  );
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: ProdukBookListPage(),
+    );
+  }
+}
+
 
 
 class AddProductPage extends StatelessWidget {
@@ -10,7 +31,7 @@ class AddProductPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     tambahProduct() async {
-      var result = await Supabase.instance.client.from('produk').insert([
+      var result = await Supabase.instance.client.from('Produk').insert([
         {
           "NamaProduk": _nameController.text.trim(),
           "Harga": _priceController.text.trim(),
@@ -86,8 +107,3 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: MyHomePage(),
-  ));
-}

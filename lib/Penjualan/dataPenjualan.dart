@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ukk_2025/homePage.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
-    url: 'https://eipxilvxaevdrtezggrw.supabase.co', 
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHhpbHZ4YWV2ZHJ0ZXpnZ3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDg4NTMsImV4cCI6MjA1NDk4NDg1M30.66T2kAZ_unpK10-el_Xe5ebCJxKRG2gft7OaRuQxRp8',
+    url: 'https://eipxilvxaevdrtezggrw.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHhpbHZ4YWV2ZHJ0ZXpnZ3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDg4NTMsImV4cCI6MjA1NDk4NDg1M30.66T2kAZ_unpK10-el_Xe5ebCJxKRG2gft7OaRuQxRp8'
   );
   runApp(MyApp());
 }
@@ -23,7 +22,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 class PenjualanBookListPage extends StatefulWidget {
   const PenjualanBookListPage({Key? key}) : super(key: key);
 
@@ -32,7 +30,7 @@ class PenjualanBookListPage extends StatefulWidget {
 }
 
 class _PenjualanBookListPageState extends State<PenjualanBookListPage> {
-  List<Map<String, dynamic>> penjualan = [];
+  List<Map<String, dynamic>> Penjualan = [];
 
   @override
   void initState() {
@@ -44,16 +42,16 @@ class _PenjualanBookListPageState extends State<PenjualanBookListPage> {
     try {
       final response = await Supabase.instance.client.from('Penjualan').select();
       setState(() {
-        penjualan = List<Map<String, dynamic>>.from(response);
+        Penjualan = List<Map<String, dynamic>>.from(response);
       });
     } catch (e) {
       print('Error fetching penjualan: $e');
     }
   }
 
-  Future<void> deletePenjualan(int ID) async {
+  Future<void> deletePenjualan(int id) async {
     try {
-      await Supabase.instance.client.from('Penjualan').delete().eq('PenjualanID', ID);
+      await Supabase.instance.client.from('Penjualan').delete().eq('penjualanid', id);
       fetchPenjualan();
     } catch (e) {
       print('Error deleting: $e');
@@ -63,14 +61,13 @@ class _PenjualanBookListPageState extends State<PenjualanBookListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-      ),
-      body: penjualan.isEmpty
+
+      body: Penjualan.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
-              itemCount: penjualan.length,
+              itemCount: Penjualan.length,
               itemBuilder: (context, index) {
-                final item = penjualan[index];
+                final item = Penjualan[index];
                 return ListTile(
                   title: Text(item['TanggalPenjualan'] ?? 'Tanggal tidak tersedia'),
                   subtitle: Text('Total Harga: ${item['TotalHarga']}'),
@@ -159,11 +156,12 @@ class _AddPenjualanPageState extends State<AddPenjualanPage> {
           'PelangganID': int.tryParse(PelangganController.text) ?? 0,
         };
 
-        if (widget.penjualanId != null) {
-          await Supabase.instance.client.from('Penjualan').update(data).eq;
-        } else {
-          await Supabase.instance.client.from('Penjualan').insert([data]);
-        }
+        if (widget.penjualanId != null && widget.penjualanId is int) {
+  await Supabase.instance.client
+      .from('Penjualan')
+      .update(data)
+      .eq('PenjualanID', widget.penjualanId is int );
+}
 
         Navigator.pop(context, true);
       } catch (e) {
@@ -174,8 +172,8 @@ class _AddPenjualanPageState extends State<AddPenjualanPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold( 
-      appBar: AppBar(title: Text(widget.penjualanId != null ? 'Edit Penjualan' : 'Edit Penjualan')), //Bagian mau menambahkan penjualan
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.penjualanId != null ? 'Edit Penjualan' : 'Tambah Penjualan')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -202,7 +200,7 @@ class _AddPenjualanPageState extends State<AddPenjualanPage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: savePenjualan,
-                child: Text(widget.penjualanId != null ? 'Update Penjualan' : 'Update Penjualan'),
+                child: Text('Simpan'),
               ),
             ],
           ),
